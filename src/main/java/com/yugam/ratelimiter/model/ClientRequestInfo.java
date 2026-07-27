@@ -10,4 +10,13 @@ public class ClientRequestInfo {
     private final String clientId;
     private int currentRequestCount;
     private Instant windowStartTime;
+
+    public void incrementRequestCount() {
+        currentRequestCount++;
+    }
+
+    public void startNewWindow(Instant now) {
+        windowStartTime = now;
+        currentRequestCount = 1;
+    }
 }
