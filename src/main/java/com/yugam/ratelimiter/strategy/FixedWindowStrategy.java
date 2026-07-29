@@ -1,12 +1,20 @@
-package com.yugam.ratelimiter.service;
+package com.yugam.ratelimiter.strategy;
 
+import com.yugam.ratelimiter.enums.AlgorithmType;
 import com.yugam.ratelimiter.model.ClientRequestInfo;
 import com.yugam.ratelimiter.model.RateLimitPolicy;
+import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.time.Instant;
 
-public class FixedWindowStrategy implements RateLimiterStrategy{
+@Component
+public class FixedWindowStrategy implements RateLimiterStrategy {
+
+    @Override
+    public AlgorithmType getAlgorithmType() {
+        return AlgorithmType.FIXED_WINDOW;
+    }
 
     @Override
     public boolean processRequest(ClientRequestInfo clientRequestInfo, RateLimitPolicy policy, Instant now) {
