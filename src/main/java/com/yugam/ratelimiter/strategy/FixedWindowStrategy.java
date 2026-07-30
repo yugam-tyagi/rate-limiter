@@ -1,5 +1,6 @@
 package com.yugam.ratelimiter.strategy;
 
+import com.yugam.ratelimiter.dto.RateLimitResponse;
 import com.yugam.ratelimiter.enums.AlgorithmType;
 import com.yugam.ratelimiter.model.ClientRequestInfo;
 import com.yugam.ratelimiter.model.RateLimitPolicy;
@@ -17,23 +18,31 @@ public class FixedWindowStrategy implements RateLimiterStrategy {
     }
 
     @Override
-    public boolean processRequest(ClientRequestInfo clientRequestInfo, RateLimitPolicy policy, Instant now) {
-        Instant start = clientRequestInfo.getWindowStartTime();
-        Duration elapsedDuration = Duration.between(start,now);
-        long elapsedTime = elapsedDuration.toSeconds();
-        long windowDuration = policy.getWindowDuration().toSeconds();
+    public RateLimitResponse processRequest(ClientRequestInfo clientRequestInfo, RateLimitPolicy policy, Instant now) {
+        Instant windowStart = clientRequestInfo.getWindowStartTime();
+        Duration elapsedDuration = Duration.between(windowStart,now);
+        long elapsedTimeInSeconds = elapsedDuration.toSeconds();
+        long windowDurationInSeconds = policy.getWindowDuration().toSeconds();
+        boolean allowed;
+        long windowResetsInSeconds;
 
-        if(elapsedTime>=windowDuration){
+        if(elapsedTimeInSeconds>=windowDurationInSeconds){
             clientRequestInfo.startNewWindow(now);
-            return true;
+            allowed=true;
+            windowResetsInSeconds=windowDurationInSeconds;
         }
-
-
-        if(clientRequestInfo.getCurrentRequestCount()<policy.getMaxRequests()){
+        else if(clientRequestInfo.getCurrentRequestCount()<policy.getMaxRequests()){
             clientRequestInfo.incrementRequestCount();
-            return true;
+            allowed=true;
+            windowResetsInSeconds = windowDurationInSeconds-elapsedTimeInSeconds;
+        }
+        else{
+            allowed=false;
+            windowResetsInSeconds = windowDurationInSeconds-elapsedTimeInSeconds;
         }
 
-        return false;
+        int remainingRequests = Math.max(0,policy.getMaxRequests()-clientRequestInfo.getCurrentRequestCount());
+
+        return new RateLimitResponse(allowed,remainingRequests, windowResetsInSeconds);
     }
 }
