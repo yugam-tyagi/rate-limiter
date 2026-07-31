@@ -28,11 +28,11 @@ public class InMemoryClientRepository implements ClientRepository{
     public void init() {
         RateLimitPolicy defaultPolicy = new RateLimitPolicy(DEFAULT_MAX_REQUESTS, DEFAULT_WINDOW_DURATION, AlgorithmType.FIXED_WINDOW);
 
-        addClient("1",defaultPolicy);
-        addClient("2",defaultPolicy);
+        addClient("client1",defaultPolicy);
+        addClient("client2",defaultPolicy);
     }
 
-    public void addClient(String clientId, RateLimitPolicy policy){
+    private void addClient(String clientId, RateLimitPolicy policy){
         ClientRequestInfo clientRequestInfo = new ClientRequestInfo(clientId,0,Instant.now());
         Client client = new Client(clientId,clientRequestInfo,policy);
         clients.put(clientId,client);
