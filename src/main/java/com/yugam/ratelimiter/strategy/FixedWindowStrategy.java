@@ -2,6 +2,7 @@ package com.yugam.ratelimiter.strategy;
 
 import com.yugam.ratelimiter.dto.RateLimitResponse;
 import com.yugam.ratelimiter.enums.AlgorithmType;
+import com.yugam.ratelimiter.exception.RateLimitExceededException;
 import com.yugam.ratelimiter.model.ClientRequestInfo;
 import com.yugam.ratelimiter.model.RateLimitPolicy;
 import org.springframework.stereotype.Component;
@@ -39,10 +40,11 @@ public class FixedWindowStrategy implements RateLimiterStrategy {
         else{
             allowed=false;
             windowResetsInSeconds = windowDurationInSeconds-elapsedTimeInSeconds;
+            throw new RateLimitExceededException(windowResetsInSeconds);
         }
 
         int remainingRequests = Math.max(0,policy.getMaxRequests()-clientRequestInfo.getCurrentRequestCount());
 
-        return new RateLimitResponse(allowed,remainingRequests, windowResetsInSeconds);
+        return new RateLimitResponse(allowed,remainingRequests,windowResetsInSeconds);
     }
 }
