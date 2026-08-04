@@ -22,34 +22,30 @@ public class FixedWindowStrategy implements RateLimiterStrategy {
 
     @Override
     public RateLimitResponse processRequest(ClientRequestInfo clientRequestInfo, RateLimitPolicy policy, Instant now) {
-        Instant windowStart = clientRequestInfo.getWindowStartTime();
-        Duration elapsedDuration = Duration.between(windowStart,now);
-        long elapsedTimeInSeconds = elapsedDuration.toSeconds();
-        long windowDurationInSeconds = policy.getWindowDuration().toSeconds();
-        boolean allowed;
-        long windowResetsInSeconds;
+        synchronized (clientRequestInfo) {
+            Instant windowStart = clientRequestInfo.getWindowStartTime();
+            Duration elapsedDuration = Duration.between(windowStart, now);
+            long elapsedTimeInSeconds = elapsedDuration.toSeconds();
+            long windowDurationInSeconds = policy.getWindowDuration().toSeconds();
+            long windowResetsInSeconds;
 
-        if(elapsedTimeInSeconds>=windowDurationInSeconds){
-            clientRequestInfo.startNewWindow(now);
-            allowed=true;
-            windowResetsInSeconds=windowDurationInSeconds;
-        }
-        else if(clientRequestInfo.getCurrentRequestCount()<policy.getMaxRequests()){
-            clientRequestInfo.incrementRequestCount();
-            allowed=true;
-            windowResetsInSeconds = windowDurationInSeconds-elapsedTimeInSeconds;
-        }
-        else{
-            allowed=false;
-            windowResetsInSeconds = windowDurationInSeconds-elapsedTimeInSeconds;
-            throw new RateLimitExceededException(windowResetsInSeconds);
-        }
+            if (elapsedTimeInSeconds >= windowDurationInSeconds) {
+                clientRequestInfo.startNewWindow(now);
+                windowResetsInSeconds = windowDurationInSeconds;
+            } else if (clientRequestInfo.getCurrentRequestCount() < policy.getMaxRequests()) {
+                clientRequestInfo.incrementRequestCount();
+                windowResetsInSeconds = windowDurationInSeconds - elapsedTimeInSeconds;
+            } else {
+                windowResetsInSeconds = windowDurationInSeconds - elapsedTimeInSeconds;
+                throw new RateLimitExceededException(windowResetsInSeconds);
+            }
 
-        int remainingRequests = Math.max(0,policy.getMaxRequests()-clientRequestInfo.getCurrentRequestCount());
+            int remainingRequests = Math.max(0, policy.getMaxRequests() - clientRequestInfo.getCurrentRequestCount());
 
-        log.info("Request allowed for clientId: {}. Requests remaining: {}",
-                clientRequestInfo.getClientId(),
-                remainingRequests);
-        return new RateLimitResponse(allowed,remainingRequests,windowResetsInSeconds);
+            log.info("Request allowed for clientId: {}. Requests remaining: {}",
+                    clientRequestInfo.getClientId(),
+                    remainingRequests);
+            return new RateLimitResponse(true, remainingRequests, windowResetsInSeconds);
+        }
     }
 }
