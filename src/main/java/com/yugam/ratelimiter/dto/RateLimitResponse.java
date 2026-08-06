@@ -6,11 +6,9 @@ import lombok.Getter;
 public class RateLimitResponse {
     private final boolean allowed;
     private final int remainingRequests;
-    private final long windowResetsInSeconds;
 
-    public RateLimitResponse(boolean allowed, int remainingRequests, long windowResetsInSeconds){
+    public RateLimitResponse(boolean allowed, int remainingRequests){
         this.allowed = allowed;
         this.remainingRequests = remainingRequests;
-        this.windowResetsInSeconds = windowResetsInSeconds;
     }
 }

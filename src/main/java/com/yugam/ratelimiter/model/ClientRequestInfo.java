@@ -1,6 +1,9 @@
 package com.yugam.ratelimiter.model;
 
 import java.time.Instant;
+import java.util.ArrayDeque;
+import java.util.Queue;
+
 import lombok.*;
 
 @Getter
@@ -10,6 +13,8 @@ public class ClientRequestInfo {
     private final String clientId;
     private int currentRequestCount;
     private Instant windowStartTime;
+
+    private final Queue<Instant> requestTimestamps = new ArrayDeque<>();
 
     public void incrementRequestCount() {
         currentRequestCount++;

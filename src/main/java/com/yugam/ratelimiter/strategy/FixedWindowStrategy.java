@@ -31,10 +31,8 @@ public class FixedWindowStrategy implements RateLimiterStrategy {
 
             if (elapsedTimeInSeconds >= windowDurationInSeconds) {
                 clientRequestInfo.startNewWindow(now);
-                windowResetsInSeconds = windowDurationInSeconds;
             } else if (clientRequestInfo.getCurrentRequestCount() < policy.getMaxRequests()) {
                 clientRequestInfo.incrementRequestCount();
-                windowResetsInSeconds = windowDurationInSeconds - elapsedTimeInSeconds;
             } else {
                 windowResetsInSeconds = windowDurationInSeconds - elapsedTimeInSeconds;
                 throw new RateLimitExceededException(windowResetsInSeconds);
@@ -45,7 +43,7 @@ public class FixedWindowStrategy implements RateLimiterStrategy {
             log.info("Request allowed for clientId: {}. Requests remaining: {}",
                     clientRequestInfo.getClientId(),
                     remainingRequests);
-            return new RateLimitResponse(true, remainingRequests, windowResetsInSeconds);
+            return new RateLimitResponse(true, remainingRequests);
         }
     }
 }
