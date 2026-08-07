@@ -10,8 +10,6 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayDeque;
-import java.util.Queue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -29,9 +27,9 @@ public class SlidingWindowStrategyTest {
 
     @Test
     void shouldAllowRequestWhenQueueSizeIsBelowLimit(){
-        RateLimitPolicy policy = new RateLimitPolicy(3,Duration.ofMinutes(1),AlgorithmType.SLIDING_WINDOW);
+        RateLimitPolicy policy = new RateLimitPolicy(3,Duration.ofMinutes(1),AlgorithmType.SLIDING_WINDOW,0);
         Instant now = Instant.parse("2026-08-06T10:00:00Z");
-        ClientRequestInfo clientRequestInfo = new ClientRequestInfo("2",999,now);
+        ClientRequestInfo clientRequestInfo = new ClientRequestInfo("2",999,now,0,now);
         clientRequestInfo.getRequestTimestamps().offer(now.minusSeconds(40));
         clientRequestInfo.getRequestTimestamps().offer(now.minusSeconds(30));
 
@@ -44,9 +42,9 @@ public class SlidingWindowStrategyTest {
 
     @Test
     void shouldRejectRequestWhenQueueSizeEqualsLimit(){
-        RateLimitPolicy policy = new RateLimitPolicy(3,Duration.ofMinutes(1),AlgorithmType.SLIDING_WINDOW);
+        RateLimitPolicy policy = new RateLimitPolicy(3,Duration.ofMinutes(1),AlgorithmType.SLIDING_WINDOW,0);
         Instant now = Instant.parse("2026-08-06T10:00:00Z");
-        ClientRequestInfo clientRequestInfo = new ClientRequestInfo("2",999,now);
+        ClientRequestInfo clientRequestInfo = new ClientRequestInfo("2",999,now,0,now);
         clientRequestInfo.getRequestTimestamps().offer(now.minusSeconds(40));
         clientRequestInfo.getRequestTimestamps().offer(now.minusSeconds(30));
         clientRequestInfo.getRequestTimestamps().offer(now.minusSeconds(20));
@@ -62,9 +60,9 @@ public class SlidingWindowStrategyTest {
 
     @Test
     void shouldRemoveExpiredRequestsBeforeAllowing(){
-        RateLimitPolicy policy = new RateLimitPolicy(3,Duration.ofMinutes(1),AlgorithmType.SLIDING_WINDOW);
+        RateLimitPolicy policy = new RateLimitPolicy(3,Duration.ofMinutes(1),AlgorithmType.SLIDING_WINDOW,0);
         Instant now = Instant.parse("2026-08-06T10:00:00Z");
-        ClientRequestInfo clientRequestInfo = new ClientRequestInfo("2",999,now);
+        ClientRequestInfo clientRequestInfo = new ClientRequestInfo("2",999,now,0,now);
         clientRequestInfo.getRequestTimestamps().offer(now.minusSeconds(80));
         clientRequestInfo.getRequestTimestamps().offer(now.minusSeconds(70));
         clientRequestInfo.getRequestTimestamps().offer(now.minusSeconds(55));
@@ -78,9 +76,9 @@ public class SlidingWindowStrategyTest {
 
     @Test
     void shouldAllowOnlyMaxRequestsWhenMultipleThreadsAccessSameClient(){
-        RateLimitPolicy policy = new RateLimitPolicy(5,Duration.ofMinutes(1),AlgorithmType.SLIDING_WINDOW);
+        RateLimitPolicy policy = new RateLimitPolicy(5,Duration.ofMinutes(1),AlgorithmType.SLIDING_WINDOW,0);
         Instant now = Instant.parse("2026-08-06T10:00:00Z");
-        ClientRequestInfo clientRequestInfo = new ClientRequestInfo("2",999,now);
+        ClientRequestInfo clientRequestInfo = new ClientRequestInfo("2",999,now,0,now);
         clientRequestInfo.getRequestTimestamps().offer(now.minusSeconds(80));
         clientRequestInfo.getRequestTimestamps().offer(now.minusSeconds(70));
         clientRequestInfo.getRequestTimestamps().offer(now.minusSeconds(55));

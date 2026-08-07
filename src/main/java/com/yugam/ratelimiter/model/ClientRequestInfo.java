@@ -16,6 +16,9 @@ public class ClientRequestInfo {
 
     private final Queue<Instant> requestTimestamps = new ArrayDeque<>();
 
+    private int availableTokens;
+    private Instant lastRefillTime;
+
     public void incrementRequestCount() {
         currentRequestCount++;
     }
@@ -23,5 +26,10 @@ public class ClientRequestInfo {
     public void startNewWindow(Instant now) {
         windowStartTime = now;
         currentRequestCount = 1;
+    }
+
+    public void refreshTokensAndRefillTime(int tokens, Instant instant){
+        availableTokens = tokens;
+        lastRefillTime = instant;
     }
 }

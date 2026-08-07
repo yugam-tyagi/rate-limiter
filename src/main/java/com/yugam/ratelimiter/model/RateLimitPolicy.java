@@ -14,4 +14,5 @@ public class RateLimitPolicy {
     private final int maxRequests;
     private final Duration windowDuration;
     private final AlgorithmType algorithm;
+    private final int refillRate; //Unit: tokens/second
 }

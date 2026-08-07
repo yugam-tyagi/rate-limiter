@@ -26,18 +26,18 @@ public class InMemoryClientRepository implements ClientRepository{
 
     @PostConstruct
     public void init() {
-        RateLimitPolicy defaultPolicy1 = new RateLimitPolicy(DEFAULT_MAX_REQUESTS, DEFAULT_WINDOW_DURATION, AlgorithmType.FIXED_WINDOW);
-        RateLimitPolicy defaultPolicy2 = new RateLimitPolicy(DEFAULT_MAX_REQUESTS, DEFAULT_WINDOW_DURATION, AlgorithmType.SLIDING_WINDOW);
+        RateLimitPolicy defaultPolicy1 = new RateLimitPolicy(DEFAULT_MAX_REQUESTS, DEFAULT_WINDOW_DURATION, AlgorithmType.FIXED_WINDOW,0);
+        RateLimitPolicy defaultPolicy2 = new RateLimitPolicy(DEFAULT_MAX_REQUESTS, DEFAULT_WINDOW_DURATION, AlgorithmType.SLIDING_WINDOW,0);
+        RateLimitPolicy defaultPolicy3 = new RateLimitPolicy(DEFAULT_MAX_REQUESTS, DEFAULT_WINDOW_DURATION, AlgorithmType.TOKEN_BUCKET,3);
 
         addClient("client1",defaultPolicy1);
-        addClient("client2",defaultPolicy1);
-        addClient("client3",defaultPolicy2);
-        addClient("client4",defaultPolicy2);
+        addClient("client2",defaultPolicy2);
+        addClient("client3",defaultPolicy3);
 
     }
 
     private void addClient(String clientId, RateLimitPolicy policy){
-        ClientRequestInfo clientRequestInfo = new ClientRequestInfo(clientId,0,Instant.now());
+        ClientRequestInfo clientRequestInfo = new ClientRequestInfo(clientId,0,Instant.now(),0,Instant.now().minusSeconds(2));
         Client client = new Client(clientId,clientRequestInfo,policy);
         clients.put(clientId,client);
     }
