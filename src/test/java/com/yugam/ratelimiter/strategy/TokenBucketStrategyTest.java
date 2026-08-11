@@ -1,13 +1,11 @@
 package com.yugam.ratelimiter.strategy;
 
 import com.yugam.ratelimiter.dto.RateLimitResponse;
-import com.yugam.ratelimiter.enums.AlgorithmType;
 import com.yugam.ratelimiter.exception.RateLimitExceededException;
-import com.yugam.ratelimiter.model.ClientRequestInfo;
-import com.yugam.ratelimiter.model.RateLimitPolicy;
+import com.yugam.ratelimiter.model.TokenBucketClientInfo;
+import com.yugam.ratelimiter.model.TokenBucketPolicy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -26,9 +24,9 @@ public class TokenBucketStrategyTest {
 
     @Test
     void shouldAllowRequestWhenTokensAreAvailable(){
-        RateLimitPolicy policy = new RateLimitPolicy(10,Duration.ofMinutes(1),AlgorithmType.TOKEN_BUCKET,2);
+        TokenBucketPolicy policy = new TokenBucketPolicy(10,2);
         Instant now = Instant.parse("2026-07-28T10:00:00Z");
-        ClientRequestInfo clientRequestInfo = new ClientRequestInfo("1",999,now,2,now);
+        TokenBucketClientInfo clientRequestInfo = new TokenBucketClientInfo("1",2,now);
 
         RateLimitResponse response = strategy.processRequest(clientRequestInfo,policy,now);
 
@@ -40,9 +38,9 @@ public class TokenBucketStrategyTest {
 
     @Test
     void shouldRejectRequestWhenNoTokensAreAvailable(){
-        RateLimitPolicy policy = new RateLimitPolicy(10,Duration.ofMinutes(1),AlgorithmType.TOKEN_BUCKET,2);
+        TokenBucketPolicy policy = new TokenBucketPolicy(10,2);
         Instant now = Instant.parse("2026-07-28T10:00:00Z");
-        ClientRequestInfo clientRequestInfo = new ClientRequestInfo("1",999,now,0,now);
+        TokenBucketClientInfo clientRequestInfo = new TokenBucketClientInfo("1",0,now);
 
         RateLimitExceededException exception = assertThrows(
                 RateLimitExceededException.class,
@@ -56,23 +54,23 @@ public class TokenBucketStrategyTest {
 
     @Test
     void shouldAllowRequestAfterPartialTokenRefill(){
-        RateLimitPolicy policy = new RateLimitPolicy(10,Duration.ofMinutes(1),AlgorithmType.TOKEN_BUCKET,2);
+        TokenBucketPolicy policy = new TokenBucketPolicy(10,2);
         Instant now = Instant.parse("2026-07-28T10:00:00Z");
-        ClientRequestInfo clientRequestInfo = new ClientRequestInfo("1",999,now,0,now.minusSeconds(2));
+        TokenBucketClientInfo clientRequestInfo = new TokenBucketClientInfo("1",0,now.minusSeconds(20));
 
         RateLimitResponse response = strategy.processRequest(clientRequestInfo,policy,now);
 
         assertTrue(response.isAllowed());
-        assertEquals(3,clientRequestInfo.getAvailableTokens());
-        assertEquals(3,response.getRemainingRequests());
+        assertEquals(9,clientRequestInfo.getAvailableTokens());
+        assertEquals(9,response.getRemainingRequests());
         assertEquals(now,clientRequestInfo.getLastRefillTime());
     }
 
     @Test
     void shouldNotExceedBucketCapacityWhenRefilling(){
-        RateLimitPolicy policy = new RateLimitPolicy(10,Duration.ofMinutes(1),AlgorithmType.TOKEN_BUCKET,2);
+        TokenBucketPolicy policy = new TokenBucketPolicy(10,2);
         Instant now = Instant.parse("2026-07-28T10:00:00Z");
-        ClientRequestInfo clientRequestInfo = new ClientRequestInfo("1",999,now,0,now.minusSeconds(10));
+        TokenBucketClientInfo clientRequestInfo = new TokenBucketClientInfo("1",0,now.minusSeconds(10));
 
         RateLimitResponse response = strategy.processRequest(clientRequestInfo,policy,now);
 
@@ -84,9 +82,9 @@ public class TokenBucketStrategyTest {
 
     @Test
     void shouldAllowOnlyBucketCapacityRequestsWhenMultipleThreadsAccessSameClient(){
-        RateLimitPolicy policy = new RateLimitPolicy(10,Duration.ofMinutes(1),AlgorithmType.TOKEN_BUCKET,2);
+        TokenBucketPolicy policy = new TokenBucketPolicy(10,2);
         Instant now = Instant.parse("2026-07-28T10:00:00Z");
-        ClientRequestInfo clientRequestInfo = new ClientRequestInfo("1",999,now,0,now.minusSeconds(2));
+        TokenBucketClientInfo clientRequestInfo = new TokenBucketClientInfo("1",0,now.minusSeconds(2));
 
         ExecutorService executor = Executors.newFixedThreadPool(10);
         CountDownLatch startLatch = new CountDownLatch(1);

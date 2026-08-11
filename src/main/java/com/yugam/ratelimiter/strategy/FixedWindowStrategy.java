@@ -4,6 +4,8 @@ import com.yugam.ratelimiter.dto.RateLimitResponse;
 import com.yugam.ratelimiter.enums.AlgorithmType;
 import com.yugam.ratelimiter.exception.RateLimitExceededException;
 import com.yugam.ratelimiter.model.ClientRequestInfo;
+import com.yugam.ratelimiter.model.FixedWindowClientInfo;
+import com.yugam.ratelimiter.model.FixedWindowPolicy;
 import com.yugam.ratelimiter.model.RateLimitPolicy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -13,7 +15,7 @@ import java.time.Instant;
 
 @Slf4j
 @Component
-public class FixedWindowStrategy implements RateLimiterStrategy {
+public class FixedWindowStrategy implements RateLimiterStrategy<FixedWindowClientInfo, FixedWindowPolicy> {
 
     @Override
     public AlgorithmType getAlgorithmType() {
@@ -21,7 +23,7 @@ public class FixedWindowStrategy implements RateLimiterStrategy {
     }
 
     @Override
-    public RateLimitResponse processRequest(ClientRequestInfo clientRequestInfo, RateLimitPolicy policy, Instant now) {
+    public RateLimitResponse processRequest(FixedWindowClientInfo clientRequestInfo, FixedWindowPolicy policy, Instant now) {
         synchronized (clientRequestInfo) {
             Instant windowStart = clientRequestInfo.getWindowStartTime();
             Duration elapsedDuration = Duration.between(windowStart, now);

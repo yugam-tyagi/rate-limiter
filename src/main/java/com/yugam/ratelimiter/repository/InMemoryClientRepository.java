@@ -1,9 +1,7 @@
 package com.yugam.ratelimiter.repository;
 
 import com.yugam.ratelimiter.enums.AlgorithmType;
-import com.yugam.ratelimiter.model.Client;
-import com.yugam.ratelimiter.model.ClientRequestInfo;
-import com.yugam.ratelimiter.model.RateLimitPolicy;
+import com.yugam.ratelimiter.model.*;
 import jakarta.annotation.*;
 import org.springframework.stereotype.Repository;
 
@@ -26,19 +24,22 @@ public class InMemoryClientRepository implements ClientRepository{
 
     @PostConstruct
     public void init() {
-        RateLimitPolicy defaultPolicy1 = new RateLimitPolicy(DEFAULT_MAX_REQUESTS, DEFAULT_WINDOW_DURATION, AlgorithmType.FIXED_WINDOW,0);
-        RateLimitPolicy defaultPolicy2 = new RateLimitPolicy(DEFAULT_MAX_REQUESTS, DEFAULT_WINDOW_DURATION, AlgorithmType.SLIDING_WINDOW,0);
-        RateLimitPolicy defaultPolicy3 = new RateLimitPolicy(DEFAULT_MAX_REQUESTS, DEFAULT_WINDOW_DURATION, AlgorithmType.TOKEN_BUCKET,3);
+        FixedWindowClientInfo fixedWindowClient = new FixedWindowClientInfo("client1",0,Instant.now());
+        SlidingWindowClientInfo slidingWindowClient = new SlidingWindowClientInfo("client2");
+        TokenBucketClientInfo tokenBucketClient = new TokenBucketClientInfo("client3",0,Instant.now());
 
-        addClient("client1",defaultPolicy1);
-        addClient("client2",defaultPolicy2);
-        addClient("client3",defaultPolicy3);
+        FixedWindowPolicy fixedWindowPolicy = new FixedWindowPolicy(DEFAULT_MAX_REQUESTS, DEFAULT_WINDOW_DURATION);
+        SlidingWindowPolicy slidingWindowPolicy = new SlidingWindowPolicy(DEFAULT_MAX_REQUESTS, DEFAULT_WINDOW_DURATION);
+        TokenBucketPolicy tokenBucketPolicy = new TokenBucketPolicy(DEFAULT_MAX_REQUESTS,3);
+
+        addClient(fixedWindowClient,fixedWindowPolicy,AlgorithmType.FIXED_WINDOW);
+        addClient(slidingWindowClient,slidingWindowPolicy,AlgorithmType.SLIDING_WINDOW);
+        addClient(tokenBucketClient,tokenBucketPolicy,AlgorithmType.TOKEN_BUCKET);
 
     }
 
-    private void addClient(String clientId, RateLimitPolicy policy){
-        ClientRequestInfo clientRequestInfo = new ClientRequestInfo(clientId,0,Instant.now(),0,Instant.now().minusSeconds(2));
-        Client client = new Client(clientId,clientRequestInfo,policy);
-        clients.put(clientId,client);
+    private void addClient(ClientRequestInfo info, RateLimitPolicy policy, AlgorithmType algorithm){
+        Client client = new Client(info.getClientId(),info,policy,algorithm);
+        clients.put(info.getClientId(),client);
     }
 }

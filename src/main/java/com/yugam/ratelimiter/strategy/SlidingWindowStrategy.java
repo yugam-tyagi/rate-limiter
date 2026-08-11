@@ -5,6 +5,8 @@ import com.yugam.ratelimiter.enums.AlgorithmType;
 import com.yugam.ratelimiter.exception.RateLimitExceededException;
 import com.yugam.ratelimiter.model.ClientRequestInfo;
 import com.yugam.ratelimiter.model.RateLimitPolicy;
+import com.yugam.ratelimiter.model.SlidingWindowClientInfo;
+import com.yugam.ratelimiter.model.SlidingWindowPolicy;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
@@ -12,14 +14,14 @@ import java.time.Instant;
 import java.util.Queue;
 
 @Component
-public class SlidingWindowStrategy implements RateLimiterStrategy{
+public class SlidingWindowStrategy implements RateLimiterStrategy<SlidingWindowClientInfo, SlidingWindowPolicy>{
     @Override
     public AlgorithmType getAlgorithmType() {
         return AlgorithmType.SLIDING_WINDOW;
     }
 
     @Override
-    public RateLimitResponse processRequest(ClientRequestInfo clientRequestInfo, RateLimitPolicy policy, Instant now) {
+    public RateLimitResponse processRequest(SlidingWindowClientInfo clientRequestInfo, SlidingWindowPolicy policy, Instant now) {
         synchronized (clientRequestInfo) {
             Queue<Instant> requestQueue = clientRequestInfo.getRequestTimestamps();
             long windowDuration = policy.getWindowDuration().toSeconds();

@@ -29,8 +29,8 @@ public class RateLimiterService {
         RateLimitPolicy policy = client.getRateLimitPolicy();
         ClientRequestInfo requestInfo = client.getClientRequestInfo();
 
-        RateLimiterStrategy strategy = strategyFactory.getStrategy(policy.getAlgorithm());
-        log.info("Processing rate limit request for clientId: {} using algorithm: {}",clientId,policy.getAlgorithm());
+        RateLimiterStrategy strategy = strategyFactory.getStrategy(client.getAlgorithmType());
+        log.info("Processing rate limit request for clientId: {} using algorithm: {}",clientId,client.getAlgorithmType());
         return strategy.processRequest(requestInfo,policy,Instant.now());
     }
 }

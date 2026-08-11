@@ -4,6 +4,8 @@ import com.yugam.ratelimiter.dto.RateLimitResponse;
 import com.yugam.ratelimiter.enums.AlgorithmType;
 import com.yugam.ratelimiter.exception.RateLimitExceededException;
 import com.yugam.ratelimiter.model.ClientRequestInfo;
+import com.yugam.ratelimiter.model.FixedWindowClientInfo;
+import com.yugam.ratelimiter.model.FixedWindowPolicy;
 import com.yugam.ratelimiter.model.RateLimitPolicy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,10 +25,10 @@ public class FixedWindowStrategyTest {
 
     @Test
     void shouldAllowRequestWhenRequestCountIsBelowLimit(){
-        RateLimitPolicy policy = new RateLimitPolicy(3, Duration.ofMinutes(1), AlgorithmType.FIXED_WINDOW,0);
+        FixedWindowPolicy policy = new FixedWindowPolicy(3, Duration.ofMinutes(1));
         Instant now = Instant.parse("2026-07-28T10:00:00Z");
         Instant originalWindowStart = now.minusSeconds(20);
-        ClientRequestInfo clientRequestInfo = new ClientRequestInfo("1",2,originalWindowStart,0,now);
+        FixedWindowClientInfo clientRequestInfo = new FixedWindowClientInfo("1",2,originalWindowStart);
 
         RateLimitResponse response = strategy.processRequest(clientRequestInfo,policy,now);
 
@@ -37,10 +39,10 @@ public class FixedWindowStrategyTest {
 
     @Test
     void shouldRejectRequestWhenRequestCountEqualsLimit(){
-        RateLimitPolicy policy = new RateLimitPolicy(3, Duration.ofMinutes(1), AlgorithmType.FIXED_WINDOW,0);
+        FixedWindowPolicy policy = new FixedWindowPolicy(3, Duration.ofMinutes(1));
         Instant now = Instant.parse("2026-07-28T10:00:00Z");
         Instant originalWindowStart = now.minusSeconds(20);
-        ClientRequestInfo clientRequestInfo = new ClientRequestInfo("1",3,originalWindowStart,0,now);
+        FixedWindowClientInfo clientRequestInfo = new FixedWindowClientInfo("1",3,originalWindowStart);
 
         RateLimitExceededException exception = assertThrows(
                 RateLimitExceededException.class,
@@ -53,10 +55,10 @@ public class FixedWindowStrategyTest {
 
     @Test
     void shouldStartNewWindowWhenWindowExpires(){
-        RateLimitPolicy policy = new RateLimitPolicy(3, Duration.ofMinutes(1), AlgorithmType.FIXED_WINDOW,0);
+        FixedWindowPolicy policy = new FixedWindowPolicy(3, Duration.ofMinutes(1));
         Instant now = Instant.parse("2026-07-28T10:00:00Z");
         Instant originalWindowStart = now.minusSeconds(60);
-        ClientRequestInfo clientRequestInfo = new ClientRequestInfo("1",2,originalWindowStart,0,now);
+        FixedWindowClientInfo clientRequestInfo = new FixedWindowClientInfo("1",2,originalWindowStart);
 
         RateLimitResponse response = strategy.processRequest(clientRequestInfo,policy,now);
 
@@ -69,8 +71,8 @@ public class FixedWindowStrategyTest {
     void shouldAllowOnlyMaxRequestsWhenMultipleThreadsAccessSameClient() {
         Instant now = Instant.parse("2026-07-28T10:00:00Z");
         Instant originalWindowStart = now.minusSeconds(5);
-        RateLimitPolicy policy = new RateLimitPolicy(3,Duration.ofMinutes(1),AlgorithmType.FIXED_WINDOW,0);
-        ClientRequestInfo clientRequestInfo = new ClientRequestInfo("1",0,originalWindowStart,0,now);
+        FixedWindowPolicy policy = new FixedWindowPolicy(3, Duration.ofMinutes(1));
+        FixedWindowClientInfo clientRequestInfo = new FixedWindowClientInfo("1",0,originalWindowStart);
         ExecutorService executor = Executors.newFixedThreadPool(10);
         CountDownLatch startLatch = new CountDownLatch(1);
         CountDownLatch finishLatch = new CountDownLatch(10);

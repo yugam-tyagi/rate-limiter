@@ -7,7 +7,7 @@ import com.yugam.ratelimiter.model.RateLimitPolicy;
 
 import java.time.Instant;
 
-public interface RateLimiterStrategy {
+public interface RateLimiterStrategy<C,P> {
     AlgorithmType getAlgorithmType();
-    RateLimitResponse processRequest(ClientRequestInfo clientRequestInfo, RateLimitPolicy policy, Instant instant);
+    RateLimitResponse processRequest(C clientRequestInfo, P policy, Instant instant);
 }
