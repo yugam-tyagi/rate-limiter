@@ -3,12 +3,9 @@ package com.yugam.ratelimiter.strategy;
 import com.yugam.ratelimiter.dto.RateLimitResponse;
 import com.yugam.ratelimiter.enums.AlgorithmType;
 import com.yugam.ratelimiter.exception.RateLimitExceededException;
-import com.yugam.ratelimiter.model.ClientRequestInfo;
-import com.yugam.ratelimiter.model.RateLimitPolicy;
 import com.yugam.ratelimiter.model.TokenBucketClientInfo;
 import com.yugam.ratelimiter.model.TokenBucketPolicy;
 import org.springframework.stereotype.Component;
-
 import java.time.Duration;
 import java.time.Instant;
 
@@ -26,13 +23,13 @@ public class TokenBucketStrategy implements RateLimiterStrategy<TokenBucketClien
             int refillRate = policy.getRefillRate();
             int currentCapacity = clientRequestInfo.getAvailableTokens();
             Instant lastRefillTime = clientRequestInfo.getLastRefillTime();
-            int elapsedTime = Math.toIntExact(Duration.between(lastRefillTime, now).toSeconds());
+            int elapsedTime = Math.toIntExact(Duration.between(lastRefillTime, now).toMinutes());
             int generatedTokens = refillRate*elapsedTime;
 
             currentCapacity = Math.min(bucketCapacity,currentCapacity+generatedTokens);
 
             if(currentCapacity==0){
-                throw new RateLimitExceededException(1);
+                throw new RateLimitExceededException(60);
             }
 
             currentCapacity--;
