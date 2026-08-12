@@ -1,21 +1,31 @@
 package com.yugam.ratelimiter.controller;
 
 import com.yugam.ratelimiter.dto.RateLimitResponse;
+import com.yugam.ratelimiter.repository.RedisTestRepository;
 import com.yugam.ratelimiter.service.RateLimiterService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
 @RequestMapping("/rate-limit")
 public class RateLimiterController {
     private final RateLimiterService rateLimiterService;
+    private final RedisTestRepository redisTestRepository;
 
-    public RateLimiterController(RateLimiterService rateLimiterService){
+    public RateLimiterController(RateLimiterService rateLimiterService,RedisTestRepository redisTestRepository){
         this.rateLimiterService = rateLimiterService;
+        this.redisTestRepository = redisTestRepository;
+    }
+
+    @PostMapping("/{key}/{value}")
+    public void saveToRedis(@PathVariable String key, @PathVariable Object value){
+        redisTestRepository.save(key,value);
+    }
+
+    @GetMapping("/{key}")
+    public Object getFromRedis(@PathVariable String key){
+        return redisTestRepository.get(key);
     }
 
     @PostMapping("/{clientId}")
