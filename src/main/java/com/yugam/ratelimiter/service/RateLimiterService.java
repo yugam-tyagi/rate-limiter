@@ -1,10 +1,10 @@
 package com.yugam.ratelimiter.service;
 
-import com.yugam.ratelimiter.dto.ClientConfigurationRequest;
 import com.yugam.ratelimiter.dto.RateLimitResponse;
 import com.yugam.ratelimiter.enums.AlgorithmType;
 import com.yugam.ratelimiter.exception.ClientNotFoundException;
 import com.yugam.ratelimiter.model.Client;
+import com.yugam.ratelimiter.model.ClientConfiguration;
 import com.yugam.ratelimiter.model.PolicyData;
 import com.yugam.ratelimiter.model.clientState.ClientRequestInfo;
 import com.yugam.ratelimiter.model.policy.RateLimitPolicy;
@@ -30,6 +30,17 @@ public class RateLimiterService {
         this.redisClientConfigurationRepository = redisClientConfigurationRepository;
     }
 
+    public void createClient(ClientConfiguration configuration){
+        redisClientConfigurationRepository.save(
+                configuration.getClientId(),
+                configuration.getAlgorithmType(),
+                configuration.getPolicyData());
+    }
+
+    public ClientConfiguration getClient(String clientId){
+        return redisClientConfigurationRepository.get(clientId);
+    }
+
     public RateLimitResponse handleRequest(String clientId){
         log.info("Fetching client and policy for clientId: {}",clientId);
         Client client = clientRepository.findByClientId(clientId).orElseThrow(() -> new ClientNotFoundException(clientId));
@@ -40,15 +51,5 @@ public class RateLimiterService {
         RateLimiterStrategy strategy = strategyFactory.getStrategy(client.getAlgorithmType());
         log.info("Processing rate limit request for clientId: {} using algorithm: {}",clientId,client.getAlgorithmType());
         return strategy.processRequest(requestInfo,policy,Instant.now());
-    }
-
-    public void createClient(ClientConfigurationRequest request){
-        String clientId = request.getClientId();
-        AlgorithmType algorithmType = request.getAlgorithmType();
-        PolicyData data = request.getPolicyData();
-
-        RateLimitPolicy policy = policyFactory.getPolicy(algorithmType,data);
-
-        redisClientConfigurationRepository.save(clientId,algorithmType,policy);
     }
 }

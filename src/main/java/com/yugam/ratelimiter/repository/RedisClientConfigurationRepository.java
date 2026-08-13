@@ -3,7 +3,8 @@ package com.yugam.ratelimiter.repository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yugam.ratelimiter.enums.AlgorithmType;
-import com.yugam.ratelimiter.model.policy.RateLimitPolicy;
+import com.yugam.ratelimiter.model.ClientConfiguration;
+import com.yugam.ratelimiter.model.PolicyData;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 import java.util.Map;
@@ -18,19 +19,41 @@ public class RedisClientConfigurationRepository {
         this.objectMapper = objectMapper;
     }
 
-    public void save(String clientId, AlgorithmType algorithmType, RateLimitPolicy policy){
+    public void save(String clientId, AlgorithmType algorithmType, PolicyData data){
         try{
             redisTemplate.opsForHash().putAll(
                     clientId,
                     Map.of(
                             "clientId", clientId,
                             "algorithmType", algorithmType.name(),
-                            "policy", objectMapper.writeValueAsString(policy)
+                            "policyData", objectMapper.writeValueAsString(data)
                     )
             );
         }
-        catch(JsonProcessingException ex){
-            throw new RuntimeException("Failed to serialize rate limit policy", ex);
+        catch (JsonProcessingException exception) {
+            throw new RuntimeException("Failed to serialize policy data", exception);
+        }
+    }
+
+    public ClientConfiguration get(String clientId) {
+        try{
+            Map<Object,Object> clientData = redisTemplate.opsForHash().entries(clientId);
+
+            if (clientData.isEmpty()) {
+                throw new RuntimeException("Client configuration not found for: " + clientId);
+            }
+
+            String algorithm = (String) clientData.get("algorithmType");
+            AlgorithmType algorithmType = AlgorithmType.valueOf(algorithm);
+            String data = (String) clientData.get("policyData");
+            PolicyData policyData = objectMapper.readValue(data, PolicyData.class);
+
+            ClientConfiguration clientConfiguration = new ClientConfiguration(clientId,algorithmType,policyData);
+
+            return clientConfiguration;
+        }
+        catch (JsonProcessingException exception) {
+            throw new RuntimeException("Failed to deserialize policy data", exception);
         }
     }
 }
