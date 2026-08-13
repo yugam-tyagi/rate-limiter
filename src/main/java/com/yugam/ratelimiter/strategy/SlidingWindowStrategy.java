@@ -3,10 +3,8 @@ package com.yugam.ratelimiter.strategy;
 import com.yugam.ratelimiter.dto.RateLimitResponse;
 import com.yugam.ratelimiter.enums.AlgorithmType;
 import com.yugam.ratelimiter.exception.RateLimitExceededException;
-import com.yugam.ratelimiter.model.ClientRequestInfo;
-import com.yugam.ratelimiter.model.RateLimitPolicy;
-import com.yugam.ratelimiter.model.SlidingWindowClientInfo;
-import com.yugam.ratelimiter.model.SlidingWindowPolicy;
+import com.yugam.ratelimiter.model.clientState.SlidingWindowClientInfo;
+import com.yugam.ratelimiter.model.policy.SlidingWindowPolicy;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;

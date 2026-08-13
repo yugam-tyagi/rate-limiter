@@ -2,6 +2,8 @@ package com.yugam.ratelimiter.repository;
 
 import com.yugam.ratelimiter.enums.AlgorithmType;
 import com.yugam.ratelimiter.model.*;
+import com.yugam.ratelimiter.model.clientState.*;
+import com.yugam.ratelimiter.model.policy.*;
 import jakarta.annotation.*;
 import org.springframework.stereotype.Repository;
 import java.time.Duration;

@@ -1,18 +1,15 @@
-package com.yugam.ratelimiter.model;
+package com.yugam.ratelimiter.dto;
 
 import com.yugam.ratelimiter.enums.AlgorithmType;
-import com.yugam.ratelimiter.model.clientState.ClientRequestInfo;
+import com.yugam.ratelimiter.model.PolicyData;
 import com.yugam.ratelimiter.model.policy.RateLimitPolicy;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-@Builder
 @AllArgsConstructor
-public class Client {
+public class ClientConfigurationRequest {
     private final String clientId;
-    private ClientRequestInfo clientRequestInfo;
-    private RateLimitPolicy rateLimitPolicy;
     private AlgorithmType algorithmType;
+    private PolicyData policyData;
 }

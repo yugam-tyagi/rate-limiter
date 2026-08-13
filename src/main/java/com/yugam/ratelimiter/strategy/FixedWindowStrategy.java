@@ -3,10 +3,8 @@ package com.yugam.ratelimiter.strategy;
 import com.yugam.ratelimiter.dto.RateLimitResponse;
 import com.yugam.ratelimiter.enums.AlgorithmType;
 import com.yugam.ratelimiter.exception.RateLimitExceededException;
-import com.yugam.ratelimiter.model.ClientRequestInfo;
-import com.yugam.ratelimiter.model.FixedWindowClientInfo;
-import com.yugam.ratelimiter.model.FixedWindowPolicy;
-import com.yugam.ratelimiter.model.RateLimitPolicy;
+import com.yugam.ratelimiter.model.clientState.FixedWindowClientInfo;
+import com.yugam.ratelimiter.model.policy.FixedWindowPolicy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 

@@ -1,5 +1,6 @@
-package com.yugam.ratelimiter.model;
+package com.yugam.ratelimiter.model.policy;
 
+import com.yugam.ratelimiter.enums.AlgorithmType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -10,4 +11,9 @@ import lombok.Getter;
 public class LeakyBucketPolicy implements RateLimitPolicy{
     private final int bucketCapacity;
     private final int leakRate; //Unit: requests/minute
+
+    @Override
+    public AlgorithmType getAlgorithmType() {
+        return AlgorithmType.LEAKY_BUCKET;
+    }
 }

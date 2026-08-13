@@ -2,8 +2,8 @@ package com.yugam.ratelimiter.strategy;
 
 import com.yugam.ratelimiter.dto.RateLimitResponse;
 import com.yugam.ratelimiter.exception.RateLimitExceededException;
-import com.yugam.ratelimiter.model.TokenBucketClientInfo;
-import com.yugam.ratelimiter.model.TokenBucketPolicy;
+import com.yugam.ratelimiter.model.clientState.TokenBucketClientInfo;
+import com.yugam.ratelimiter.model.policy.TokenBucketPolicy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.time.Instant;

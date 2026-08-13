@@ -1,5 +1,6 @@
 package com.yugam.ratelimiter.controller;
 
+import com.yugam.ratelimiter.dto.ClientConfigurationRequest;
 import com.yugam.ratelimiter.dto.RateLimitResponse;
 import com.yugam.ratelimiter.repository.RedisTestRepository;
 import com.yugam.ratelimiter.service.RateLimiterService;
@@ -16,6 +17,11 @@ public class RateLimiterController {
     public RateLimiterController(RateLimiterService rateLimiterService,RedisTestRepository redisTestRepository){
         this.rateLimiterService = rateLimiterService;
         this.redisTestRepository = redisTestRepository;
+    }
+
+    @PostMapping("/config/create")
+    public void createClient(@RequestBody ClientConfigurationRequest request){
+        rateLimiterService.createClient(request);
     }
 
     @PostMapping("/{key}/{value}")

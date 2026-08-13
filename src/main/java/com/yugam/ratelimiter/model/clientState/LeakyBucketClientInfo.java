@@ -1,4 +1,4 @@
-package com.yugam.ratelimiter.model;
+package com.yugam.ratelimiter.model.clientState;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -2,8 +2,8 @@ package com.yugam.ratelimiter.strategy;
 
 import com.yugam.ratelimiter.dto.RateLimitResponse;
 import com.yugam.ratelimiter.exception.RateLimitExceededException;
-import com.yugam.ratelimiter.model.LeakyBucketClientInfo;
-import com.yugam.ratelimiter.model.LeakyBucketPolicy;
+import com.yugam.ratelimiter.model.clientState.LeakyBucketClientInfo;
+import com.yugam.ratelimiter.model.policy.LeakyBucketPolicy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
