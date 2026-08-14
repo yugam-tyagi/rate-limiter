@@ -7,7 +7,6 @@ import lombok.Getter;
 @Getter
 @Builder
 @AllArgsConstructor
-public class RateLimitResponse {
-    private final boolean allowed;
-    private final int remainingRequests;
+public class RateLimitRequest {
+    private final String clientId;
 }

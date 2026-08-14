@@ -3,17 +3,16 @@ package com.yugam.ratelimiter.strategy;
 import com.yugam.ratelimiter.dto.RateLimitResponse;
 import com.yugam.ratelimiter.enums.AlgorithmType;
 import com.yugam.ratelimiter.exception.RateLimitExceededException;
-import com.yugam.ratelimiter.model.clientState.FixedWindowClientInfo;
 import com.yugam.ratelimiter.model.policy.FixedWindowPolicy;
+import com.yugam.ratelimiter.model.state.FixedWindowState;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-
 import java.time.Duration;
 import java.time.Instant;
 
 @Slf4j
 @Component
-public class FixedWindowStrategy implements RateLimiterStrategy<FixedWindowClientInfo, FixedWindowPolicy> {
+public class FixedWindowStrategy implements RateLimiterStrategy<FixedWindowState, FixedWindowPolicy> {
 
     @Override
     public AlgorithmType getAlgorithmType() {
@@ -21,29 +20,26 @@ public class FixedWindowStrategy implements RateLimiterStrategy<FixedWindowClien
     }
 
     @Override
-    public RateLimitResponse processRequest(FixedWindowClientInfo clientRequestInfo, FixedWindowPolicy policy, Instant now) {
-        synchronized (clientRequestInfo) {
-            Instant windowStart = clientRequestInfo.getWindowStartTime();
-            Duration elapsedDuration = Duration.between(windowStart, now);
-            long elapsedTimeInSeconds = elapsedDuration.toSeconds();
-            long windowDurationInSeconds = policy.getWindowDuration().toSeconds();
-            long windowResetsInSeconds;
+    public RateLimitResponse processRequest(FixedWindowState clientState, FixedWindowPolicy policy, Instant now) {
+        Instant windowStart = clientState.getWindowStartTime();
+        long elapsedTimeInSeconds = windowStart==null ? 0 : Duration.between(windowStart,now).toSeconds();
+        long windowDurationInSeconds = policy.getWindowDuration().toSeconds();
+        long windowResetsInSeconds;
 
-            if (elapsedTimeInSeconds >= windowDurationInSeconds) {
-                clientRequestInfo.startNewWindow(now);
-            } else if (clientRequestInfo.getCurrentRequestCount() < policy.getMaxRequests()) {
-                clientRequestInfo.incrementRequestCount();
-            } else {
-                windowResetsInSeconds = windowDurationInSeconds - elapsedTimeInSeconds;
-                throw new RateLimitExceededException(windowResetsInSeconds);
-            }
-
-            int remainingRequests = Math.max(0, policy.getMaxRequests() - clientRequestInfo.getCurrentRequestCount());
-
-            log.info("Request allowed for clientId: {}. Requests remaining: {}",
-                    clientRequestInfo.getClientId(),
-                    remainingRequests);
-            return new RateLimitResponse(true, remainingRequests);
+        if (windowStart==null || elapsedTimeInSeconds >= windowDurationInSeconds) {
+            clientState.setWindowStartTime(now);
+            clientState.setCurrentRequestCount(1);
+        } else if (clientState.getCurrentRequestCount() < policy.getMaxRequests()) {
+            clientState.setCurrentRequestCount(clientState.getCurrentRequestCount()+1);
+        } else {
+            windowResetsInSeconds = windowDurationInSeconds - elapsedTimeInSeconds;
+            throw new RateLimitExceededException(windowResetsInSeconds);
         }
+
+        int remainingRequests = Math.max(0, policy.getMaxRequests() - clientState.getCurrentRequestCount());
+
+        log.info("Request allowed. Remaining requests: {}",
+                remainingRequests);
+        return new RateLimitResponse(true, remainingRequests);
     }
 }

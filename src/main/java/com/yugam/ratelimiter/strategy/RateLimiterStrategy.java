@@ -7,5 +7,5 @@ import java.time.Instant;
 
 public interface RateLimiterStrategy<C,P> {
     AlgorithmType getAlgorithmType();
-    RateLimitResponse processRequest(C clientRequestInfo, P policy, Instant instant);
+    RateLimitResponse processRequest(C clientState, P policy, Instant instant);
 }

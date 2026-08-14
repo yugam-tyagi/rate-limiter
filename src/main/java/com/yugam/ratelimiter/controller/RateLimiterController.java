@@ -1,5 +1,6 @@
 package com.yugam.ratelimiter.controller;
 
+import com.yugam.ratelimiter.dto.RateLimitRequest;
 import com.yugam.ratelimiter.dto.RateLimitResponse;
 import com.yugam.ratelimiter.model.ClientConfiguration;
 import com.yugam.ratelimiter.repository.RedisTestRepository;
@@ -29,9 +30,8 @@ public class RateLimiterController {
         return rateLimiterService.getClient(clientId);
     }
 
-    @PostMapping("/{clientId}")
-    public RateLimitResponse handleRequest(@PathVariable String clientId){
-        log.info("Received rate limit request for clientId: {}",clientId);
-        return rateLimiterService.handleRequest(clientId);
+    @PostMapping("/check")
+    public RateLimitResponse handleRequest(@RequestBody RateLimitRequest request){
+        return rateLimiterService.handleRequest(request);
     }
 }
