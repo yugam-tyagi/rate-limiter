@@ -3,11 +3,8 @@ package com.yugam.ratelimiter.service;
 import com.yugam.ratelimiter.dto.RateLimitRequest;
 import com.yugam.ratelimiter.dto.RateLimitResponse;
 import com.yugam.ratelimiter.enums.AlgorithmType;
-import com.yugam.ratelimiter.exception.ClientNotFoundException;
-import com.yugam.ratelimiter.model.Client;
 import com.yugam.ratelimiter.model.ClientConfiguration;
 import com.yugam.ratelimiter.model.PolicyData;
-import com.yugam.ratelimiter.model.clientState.ClientRequestInfo;
 import com.yugam.ratelimiter.model.policy.RateLimitPolicy;
 import com.yugam.ratelimiter.model.state.RateLimitState;
 import com.yugam.ratelimiter.repository.ClientRepository;
@@ -15,6 +12,7 @@ import com.yugam.ratelimiter.repository.RedisClientConfigurationRepository;
 import com.yugam.ratelimiter.repository.RedisRateLimitStateRepository;
 import com.yugam.ratelimiter.strategy.RateLimiterStrategy;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
 import org.springframework.stereotype.Service;
 import java.time.Instant;
 
@@ -24,15 +22,15 @@ public class RateLimiterService {
     private final StrategyFactory strategyFactory;
     private final PolicyFactory policyFactory;
     private final StateRepositoryFactory repositoryFactory;
+    private final RedisLockService redisLockService;
     private final RedisClientConfigurationRepository redisClientConfigurationRepository;
-    private final RedisRateLimitStateRepository redisRateLimitStateRepository;
 
-    public RateLimiterService(ClientRepository clientRepository, StrategyFactory strategyFactory, PolicyFactory policyFactory, StateRepositoryFactory repositoryFactory, RedisClientConfigurationRepository redisClientConfigurationRepository, RedisRateLimitStateRepository redisRateLimitStateRepository){
+    public RateLimiterService(StrategyFactory strategyFactory, PolicyFactory policyFactory, StateRepositoryFactory repositoryFactory, RedisLockService redisLockService, RedisClientConfigurationRepository redisClientConfigurationRepository, RedisRateLimitStateRepository redisRateLimitStateRepository){
         this.strategyFactory = strategyFactory;
         this.policyFactory = policyFactory;
         this.repositoryFactory = repositoryFactory;
+        this.redisLockService = redisLockService;
         this.redisClientConfigurationRepository = redisClientConfigurationRepository;
-        this.redisRateLimitStateRepository = redisRateLimitStateRepository;
     }
 
     public void createClient(ClientConfiguration configuration){
@@ -55,15 +53,22 @@ public class RateLimiterService {
         AlgorithmType algorithmType = clientConfiguration.getAlgorithmType();
         PolicyData policyData = clientConfiguration.getPolicyData();
 
-
         RateLimitPolicy policy = policyFactory.getPolicy(algorithmType,policyData);
         RateLimiterStrategy strategy = strategyFactory.getStrategy(algorithmType);
         RedisRateLimitStateRepository repository = repositoryFactory.getRepository(algorithmType);
 
-        RateLimitState state = (RateLimitState) repository.getState(clientId);
-        RateLimitResponse response = strategy.processRequest(state,policy,Instant.now());
-        repository.saveState(clientId,state);
+        RLock lock = redisLockService.getLock(clientId);
 
-        return response;
+        try{
+            lock.lock();
+            RateLimitState state = (RateLimitState) repository.getState(clientId);
+            log.info("Client: {}, State: {}", clientId, state);
+            RateLimitResponse response = strategy.processRequest(state,policy,Instant.now());
+            repository.saveState(clientId,state);
+            return response;
+        }
+        finally {
+            lock.unlock();
+        }
     }
 }
