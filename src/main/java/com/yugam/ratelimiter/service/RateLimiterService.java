@@ -7,7 +7,6 @@ import com.yugam.ratelimiter.model.ClientConfiguration;
 import com.yugam.ratelimiter.model.PolicyData;
 import com.yugam.ratelimiter.model.policy.RateLimitPolicy;
 import com.yugam.ratelimiter.model.state.RateLimitState;
-import com.yugam.ratelimiter.repository.ClientRepository;
 import com.yugam.ratelimiter.repository.RedisClientConfigurationRepository;
 import com.yugam.ratelimiter.repository.RedisRateLimitStateRepository;
 import com.yugam.ratelimiter.strategy.RateLimiterStrategy;
@@ -25,7 +24,7 @@ public class RateLimiterService {
     private final RedisLockService redisLockService;
     private final RedisClientConfigurationRepository redisClientConfigurationRepository;
 
-    public RateLimiterService(StrategyFactory strategyFactory, PolicyFactory policyFactory, StateRepositoryFactory repositoryFactory, RedisLockService redisLockService, RedisClientConfigurationRepository redisClientConfigurationRepository, RedisRateLimitStateRepository redisRateLimitStateRepository){
+    public RateLimiterService(StrategyFactory strategyFactory, PolicyFactory policyFactory, StateRepositoryFactory repositoryFactory, RedisLockService redisLockService, RedisClientConfigurationRepository redisClientConfigurationRepository){
         this.strategyFactory = strategyFactory;
         this.policyFactory = policyFactory;
         this.repositoryFactory = repositoryFactory;
