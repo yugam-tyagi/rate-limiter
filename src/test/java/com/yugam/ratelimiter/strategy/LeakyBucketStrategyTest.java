@@ -1,11 +1,19 @@
 package com.yugam.ratelimiter.strategy;
 
+import com.yugam.ratelimiter.dto.RateLimitRequest;
 import com.yugam.ratelimiter.dto.RateLimitResponse;
 import com.yugam.ratelimiter.exception.RateLimitExceededException;
 import com.yugam.ratelimiter.model.clientState.LeakyBucketClientInfo;
 import com.yugam.ratelimiter.model.policy.LeakyBucketPolicy;
+import com.yugam.ratelimiter.model.state.LeakyBucketState;
+import com.yugam.ratelimiter.repository.LeakyBucketStateRepository;
+import com.yugam.ratelimiter.repository.RedisRateLimitStateRepository;
+import com.yugam.ratelimiter.service.RateLimiterService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
 import static org.junit.jupiter.api.Assertions.*;
 import java.time.Instant;
 import java.util.concurrent.CountDownLatch;
@@ -13,7 +21,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@SpringBootTest
 public class LeakyBucketStrategyTest {
+    @Autowired
+    private RateLimiterService service;
+    @Autowired
+    private LeakyBucketStateRepository repository;
     private RateLimiterStrategy strategy;
 
     @BeforeEach
@@ -25,66 +38,64 @@ public class LeakyBucketStrategyTest {
     void shouldAllowRequestWhenBucketIsNotFull(){
         Instant now = Instant.now();
         LeakyBucketPolicy policy = new LeakyBucketPolicy(5,2);
-        LeakyBucketClientInfo clientInfo = new LeakyBucketClientInfo("1",3, now);
+        LeakyBucketState state = new LeakyBucketState(3,now);
 
-        RateLimitResponse response = strategy.processRequest(clientInfo,policy,now);
+        RateLimitResponse response = strategy.processRequest(state,policy,now);
 
         assertTrue(response.isAllowed());
         assertEquals(1,response.getRemainingRequests());
-        assertEquals(4,clientInfo.getCurrentRequestCount());
-        assertEquals(now,clientInfo.getLastLeakTime());
+        assertEquals(4,state.getCurrentRequestCount());
+        assertEquals(now,state.getLastLeakTime());
     }
 
     @Test
     void shouldRejectRequestWhenBucketIsFull(){
         Instant now = Instant.now();
         LeakyBucketPolicy policy = new LeakyBucketPolicy(5,2);
-        LeakyBucketClientInfo clientInfo = new LeakyBucketClientInfo("1",5, now);
+        LeakyBucketState state = new LeakyBucketState(5,now);
 
         RateLimitExceededException exception = assertThrows(
                 RateLimitExceededException.class,
-                ()->strategy.processRequest(clientInfo,policy,now)
+                ()->strategy.processRequest(state,policy,now)
         );
 
-        assertEquals(60,exception.getRetryAfterSeconds());
-        assertEquals(5,clientInfo.getCurrentRequestCount());
-        assertEquals(now,clientInfo.getLastLeakTime());
+        assertEquals((long) Math.ceil(60.0/policy.getLeakRate()),exception.getRetryAfterSeconds());
+        assertEquals(5,state.getCurrentRequestCount());
+        assertEquals(now,state.getLastLeakTime());
     }
 
     @Test
     void shouldLeakRequestsBasedOnElapsedMinutes(){
         Instant now = Instant.now();
         LeakyBucketPolicy policy = new LeakyBucketPolicy(5,2);
-        LeakyBucketClientInfo clientInfo = new LeakyBucketClientInfo("1",5, now.minusSeconds(120));
+        LeakyBucketState state = new LeakyBucketState(5,now.minusSeconds(70));
 
-        RateLimitResponse response = strategy.processRequest(clientInfo,policy,now);
+        RateLimitResponse response = strategy.processRequest(state,policy,now);
 
         assertTrue(response.isAllowed());
-        assertEquals(3,response.getRemainingRequests());
-        assertEquals(2,clientInfo.getCurrentRequestCount());
-        assertEquals(now,clientInfo.getLastLeakTime());
+        assertEquals(1,response.getRemainingRequests());
+        assertEquals(4,state.getCurrentRequestCount());
+        assertEquals(now.minusSeconds(10),state.getLastLeakTime());
     }
 
     @Test
     void shouldEmptyBucketAfterSufficientTime(){
         Instant now = Instant.now();
         LeakyBucketPolicy policy = new LeakyBucketPolicy(5,2);
-        LeakyBucketClientInfo clientInfo = new LeakyBucketClientInfo("1",5, now.minusSeconds(300));
+        LeakyBucketState state = new LeakyBucketState(5,now.minusSeconds(320));
 
-        RateLimitResponse response = strategy.processRequest(clientInfo,policy,now);
+        RateLimitResponse response = strategy.processRequest(state,policy,now);
 
         assertTrue(response.isAllowed());
         assertEquals(4,response.getRemainingRequests());
-        assertEquals(1,clientInfo.getCurrentRequestCount());
-        assertEquals(now,clientInfo.getLastLeakTime());
+        assertEquals(1,state.getCurrentRequestCount());
+        assertEquals(now.minusSeconds(20),state.getLastLeakTime());
     }
 
     @Test
     void shouldAllowOnlyBucketCapacityRequestsWhenMultipleThreadsAccessSameClient(){
-        Instant now = Instant.now();
-        LeakyBucketPolicy policy = new LeakyBucketPolicy(5,2);
-        LeakyBucketClientInfo clientInfo = new LeakyBucketClientInfo("1",1, now);
-
+        String clientId = "Mohit";
+        RateLimitRequest request = new RateLimitRequest(clientId);
         ExecutorService executor = Executors.newFixedThreadPool(10);
         CountDownLatch startLatch = new CountDownLatch(1);
         CountDownLatch finishLatch = new CountDownLatch(10);
@@ -95,7 +106,7 @@ public class LeakyBucketStrategyTest {
             executor.submit(()->{
                 try{
                     startLatch.await();
-                    strategy.processRequest(clientInfo,policy,now);
+                    service.handleRequest(request);
                     successCount.incrementAndGet();
                 }
                 catch (RateLimitExceededException exception){
