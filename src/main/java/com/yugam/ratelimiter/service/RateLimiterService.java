@@ -46,6 +46,15 @@ public class RateLimiterService {
         return redisClientConfigurationRepository.get(clientId);
     }
 
+    public void resetState(RateLimitRequest request){
+        String clientId = request.getClientId();
+        ClientConfiguration clientConfiguration = redisClientConfigurationRepository.get(clientId);
+        AlgorithmType algorithmType = clientConfiguration.getAlgorithmType();
+        RedisRateLimitStateRepository repository = repositoryFactory.getRepository(algorithmType);
+
+        repository.initializeState(clientId);
+    }
+
     public RateLimitResponse handleRequest(RateLimitRequest request){
         String clientId = request.getClientId();
         ClientConfiguration clientConfiguration = redisClientConfigurationRepository.get(clientId);
