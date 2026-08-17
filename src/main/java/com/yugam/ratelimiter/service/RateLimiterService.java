@@ -3,6 +3,7 @@ package com.yugam.ratelimiter.service;
 import com.yugam.ratelimiter.dto.RateLimitRequest;
 import com.yugam.ratelimiter.dto.RateLimitResponse;
 import com.yugam.ratelimiter.enums.AlgorithmType;
+import com.yugam.ratelimiter.exception.ClientNotFoundException;
 import com.yugam.ratelimiter.model.ClientConfiguration;
 import com.yugam.ratelimiter.model.PolicyData;
 import com.yugam.ratelimiter.model.policy.RateLimitPolicy;
@@ -10,6 +11,7 @@ import com.yugam.ratelimiter.model.state.RateLimitState;
 import com.yugam.ratelimiter.repository.RedisClientConfigurationRepository;
 import com.yugam.ratelimiter.repository.RedisRateLimitStateRepository;
 import com.yugam.ratelimiter.strategy.RateLimiterStrategy;
+import com.yugam.ratelimiter.validator.PolicyValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.springframework.stereotype.Service;
@@ -22,13 +24,15 @@ public class RateLimiterService {
     private final PolicyFactory policyFactory;
     private final StateRepositoryFactory repositoryFactory;
     private final RedisLockService redisLockService;
+    private final PolicyValidator policyValidator;
     private final RedisClientConfigurationRepository redisClientConfigurationRepository;
 
-    public RateLimiterService(StrategyFactory strategyFactory, PolicyFactory policyFactory, StateRepositoryFactory repositoryFactory, RedisLockService redisLockService, RedisClientConfigurationRepository redisClientConfigurationRepository){
+    public RateLimiterService(StrategyFactory strategyFactory, PolicyFactory policyFactory, StateRepositoryFactory repositoryFactory, RedisLockService redisLockService, PolicyValidator policyValidator, RedisClientConfigurationRepository redisClientConfigurationRepository){
         this.strategyFactory = strategyFactory;
         this.policyFactory = policyFactory;
         this.repositoryFactory = repositoryFactory;
         this.redisLockService = redisLockService;
+        this.policyValidator = policyValidator;
         this.redisClientConfigurationRepository = redisClientConfigurationRepository;
     }
 
@@ -36,6 +40,8 @@ public class RateLimiterService {
         String clientId = configuration.getClientId();
         AlgorithmType algorithmType = configuration.getAlgorithmType();
         PolicyData data = configuration.getPolicyData();
+
+        policyValidator.validate(algorithmType,data);
 
         redisClientConfigurationRepository.save(clientId,algorithmType,data);
         RedisRateLimitStateRepository stateRepository = repositoryFactory.getRepository(algorithmType);

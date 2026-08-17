@@ -3,6 +3,7 @@ package com.yugam.ratelimiter.repository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yugam.ratelimiter.enums.AlgorithmType;
+import com.yugam.ratelimiter.exception.ClientNotFoundException;
 import com.yugam.ratelimiter.model.ClientConfiguration;
 import com.yugam.ratelimiter.model.PolicyData;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -40,7 +41,7 @@ public class RedisClientConfigurationRepository {
             Map<Object,Object> clientData = redisTemplate.opsForHash().entries(clientId);
 
             if (clientData.isEmpty()) {
-                throw new RuntimeException("Client configuration not found for: " + clientId);
+                throw new ClientNotFoundException(clientId);
             }
 
             String algorithm = (String) clientData.get("algorithmType");
