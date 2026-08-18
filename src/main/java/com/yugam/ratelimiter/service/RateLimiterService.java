@@ -82,7 +82,9 @@ public class RateLimiterService {
             return response;
         }
         finally {
-            lock.unlock();
+            if(lock.isHeldByCurrentThread()) {
+                lock.unlock();
+            }
         }
     }
 }

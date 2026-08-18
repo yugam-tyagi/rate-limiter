@@ -3,6 +3,7 @@ package com.yugam.ratelimiter.exception;
 import com.yugam.ratelimiter.dto.ApiErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -60,6 +61,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiErrorResponse> handleInvalidPolicyException(InvalidPolicyException ex, HttpServletRequest request) {
         log.warn("Invalid policy for request: {}", request.getRequestURI());
         return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(RedisConnectionFailureException.class)
+    public ResponseEntity<ApiErrorResponse> handleRedisConnectionFailureException(RedisConnectionFailureException ex, HttpServletRequest request){
+        log.error("Redis connection failed for request: {}", request.getRequestURI(), ex);
+        return buildErrorResponse(HttpStatus.SERVICE_UNAVAILABLE,"Rate limiter service is temporarily unavailable. Please try again later.",request);
     }
 
     @ExceptionHandler(Exception.class)
