@@ -49,7 +49,7 @@ The application follows a strategy-based architecture that allows different rate
                                │
                                ▼
                     ┌─────────────────────┐
-                    │ RateLimiterController│
+                    │RateLimiterController│
                     └──────────┬──────────┘
                                │
                                ▼
