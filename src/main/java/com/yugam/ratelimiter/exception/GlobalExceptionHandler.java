@@ -1,6 +1,10 @@
 package com.yugam.ratelimiter.exception;
 
 import com.yugam.ratelimiter.dto.ApiErrorResponse;
+import com.yugam.ratelimiter.exception.exceptions.ClientNotFoundException;
+import com.yugam.ratelimiter.exception.exceptions.InvalidPolicyException;
+import com.yugam.ratelimiter.exception.exceptions.RateLimitExceededException;
+import com.yugam.ratelimiter.exception.exceptions.StrategyNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.RedisConnectionFailureException;
@@ -8,10 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.http.HttpHeaders;
-
 import java.time.Instant;
 
 @Slf4j
@@ -26,7 +28,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(StrategyNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleStrategyNotFoundException(StrategyNotFoundException ex, HttpServletRequest request){
-        log.warn("Strategy not found for request: {}",request.getRequestURI());
+        log.error("Strategy not found for request: {}",request.getRequestURI());
         return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request);
     }
 
@@ -71,7 +73,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleGenericException(Exception ex, HttpServletRequest request){
-        log.warn("Unexpected error occurred while processing request: {}",request.getRequestURI(),ex);
+        log.error("Unexpected error occurred while processing request: {}",request.getRequestURI(),ex);
         return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR,"An unexpected error occurred.",request);
     }
 

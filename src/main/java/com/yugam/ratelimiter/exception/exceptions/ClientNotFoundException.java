@@ -1,4 +1,4 @@
-package com.yugam.ratelimiter.exception;
+package com.yugam.ratelimiter.exception.exceptions;
 
 public class ClientNotFoundException extends RuntimeException{
     public ClientNotFoundException(String clientId){

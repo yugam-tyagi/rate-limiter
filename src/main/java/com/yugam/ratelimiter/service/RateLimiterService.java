@@ -3,13 +3,15 @@ package com.yugam.ratelimiter.service;
 import com.yugam.ratelimiter.dto.RateLimitRequest;
 import com.yugam.ratelimiter.dto.RateLimitResponse;
 import com.yugam.ratelimiter.enums.AlgorithmType;
-import com.yugam.ratelimiter.exception.ClientNotFoundException;
 import com.yugam.ratelimiter.model.ClientConfiguration;
 import com.yugam.ratelimiter.model.PolicyData;
 import com.yugam.ratelimiter.model.policy.RateLimitPolicy;
 import com.yugam.ratelimiter.model.state.RateLimitState;
 import com.yugam.ratelimiter.repository.RedisClientConfigurationRepository;
-import com.yugam.ratelimiter.repository.RedisRateLimitStateRepository;
+import com.yugam.ratelimiter.repository.clientStateRepository.RedisRateLimitStateRepository;
+import com.yugam.ratelimiter.service.factories.PolicyFactory;
+import com.yugam.ratelimiter.service.factories.StateRepositoryFactory;
+import com.yugam.ratelimiter.service.factories.StrategyFactory;
 import com.yugam.ratelimiter.strategy.RateLimiterStrategy;
 import com.yugam.ratelimiter.validator.PolicyValidator;
 import lombok.extern.slf4j.Slf4j;
@@ -76,9 +78,15 @@ public class RateLimiterService {
         try{
             lock.lock();
             RateLimitState state = (RateLimitState) repository.getState(clientId);
-            log.info("Client: {}, State: {}", clientId, state);
             RateLimitResponse response = strategy.processRequest(state,policy,Instant.now());
             repository.saveState(clientId,state);
+            log.info(
+                    "Rate limit check completed for client: {}, algorithm: {}, allowed: {}, remaining: {}",
+                    clientId,
+                    algorithmType,
+                    response.isAllowed(),
+                    response.getRemainingRequests()
+            );
             return response;
         }
         finally {

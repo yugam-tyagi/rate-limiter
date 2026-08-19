@@ -1,7 +1,7 @@
-package com.yugam.ratelimiter.service;
+package com.yugam.ratelimiter.service.factories;
 
 import com.yugam.ratelimiter.enums.AlgorithmType;
-import com.yugam.ratelimiter.repository.RedisRateLimitStateRepository;
+import com.yugam.ratelimiter.repository.clientStateRepository.RedisRateLimitStateRepository;
 import org.springframework.stereotype.Component;
 import java.util.EnumMap;
 import java.util.List;

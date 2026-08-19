@@ -1,4 +1,4 @@
-package com.yugam.ratelimiter.service;
+package com.yugam.ratelimiter.service.factories;
 
 import com.yugam.ratelimiter.enums.AlgorithmType;
 import com.yugam.ratelimiter.model.PolicyData;

@@ -1,4 +1,4 @@
-package com.yugam.ratelimiter.repository;
+package com.yugam.ratelimiter.repository.clientStateRepository;
 
 import com.yugam.ratelimiter.enums.AlgorithmType;
 

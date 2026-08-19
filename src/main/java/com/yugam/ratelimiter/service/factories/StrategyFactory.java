@@ -1,7 +1,7 @@
-package com.yugam.ratelimiter.service;
+package com.yugam.ratelimiter.service.factories;
 
 import com.yugam.ratelimiter.enums.AlgorithmType;
-import com.yugam.ratelimiter.exception.StrategyNotFoundException;
+import com.yugam.ratelimiter.exception.exceptions.StrategyNotFoundException;
 import com.yugam.ratelimiter.strategy.RateLimiterStrategy;
 import org.springframework.stereotype.Component;
 import java.util.EnumMap;

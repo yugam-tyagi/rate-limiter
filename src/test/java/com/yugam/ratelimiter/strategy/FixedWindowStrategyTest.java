@@ -2,10 +2,11 @@ package com.yugam.ratelimiter.strategy;
 
 import com.yugam.ratelimiter.dto.RateLimitRequest;
 import com.yugam.ratelimiter.dto.RateLimitResponse;
-import com.yugam.ratelimiter.exception.RateLimitExceededException;
+import com.yugam.ratelimiter.exception.exceptions.RateLimitExceededException;
 import com.yugam.ratelimiter.model.policy.FixedWindowPolicy;
 import com.yugam.ratelimiter.model.state.FixedWindowState;
-import com.yugam.ratelimiter.repository.RedisRateLimitStateRepository;
+import com.yugam.ratelimiter.repository.clientStateRepository.FixedWindowStateRepository;
+import com.yugam.ratelimiter.repository.clientStateRepository.RedisRateLimitStateRepository;
 import com.yugam.ratelimiter.service.RateLimiterService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +23,7 @@ public class FixedWindowStrategyTest {
     @Autowired
     private RateLimiterService service;
     @Autowired
-    private RedisRateLimitStateRepository repository;
+    private FixedWindowStateRepository repository;
     private FixedWindowStrategy strategy;
 
     @BeforeEach

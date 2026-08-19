@@ -2,8 +2,7 @@ package com.yugam.ratelimiter.strategy;
 
 import com.yugam.ratelimiter.dto.RateLimitResponse;
 import com.yugam.ratelimiter.enums.AlgorithmType;
-import com.yugam.ratelimiter.exception.RateLimitExceededException;
-import com.yugam.ratelimiter.model.clientState.TokenBucketClientInfo;
+import com.yugam.ratelimiter.exception.exceptions.RateLimitExceededException;
 import com.yugam.ratelimiter.model.policy.TokenBucketPolicy;
 import com.yugam.ratelimiter.model.state.TokenBucketState;
 import org.springframework.stereotype.Component;

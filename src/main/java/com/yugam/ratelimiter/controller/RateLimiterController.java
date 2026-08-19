@@ -3,7 +3,6 @@ package com.yugam.ratelimiter.controller;
 import com.yugam.ratelimiter.dto.RateLimitRequest;
 import com.yugam.ratelimiter.dto.RateLimitResponse;
 import com.yugam.ratelimiter.model.ClientConfiguration;
-import com.yugam.ratelimiter.repository.RedisTestRepository;
 import com.yugam.ratelimiter.service.RateLimiterService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -19,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 public class RateLimiterController {
     private final RateLimiterService rateLimiterService;
 
-    public RateLimiterController(RateLimiterService rateLimiterService,RedisTestRepository redisTestRepository){
+    public RateLimiterController(RateLimiterService rateLimiterService){
         this.rateLimiterService = rateLimiterService;
     }
 

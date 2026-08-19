@@ -1,7 +1,6 @@
 package com.yugam.ratelimiter.model;
 
 import com.yugam.ratelimiter.enums.AlgorithmType;
-import com.yugam.ratelimiter.model.policy.RateLimitPolicy;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

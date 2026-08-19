@@ -1,10 +1,9 @@
 package com.yugam.ratelimiter.validator;
 
 import com.yugam.ratelimiter.enums.AlgorithmType;
-import com.yugam.ratelimiter.exception.InvalidPolicyException;
+import com.yugam.ratelimiter.exception.exceptions.InvalidPolicyException;
 import com.yugam.ratelimiter.model.PolicyData;
 import org.springframework.stereotype.Component;
-
 import java.util.Map;
 
 @Component

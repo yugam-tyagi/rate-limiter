@@ -3,7 +3,7 @@ package com.yugam.ratelimiter.repository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yugam.ratelimiter.enums.AlgorithmType;
-import com.yugam.ratelimiter.exception.ClientNotFoundException;
+import com.yugam.ratelimiter.exception.exceptions.ClientNotFoundException;
 import com.yugam.ratelimiter.model.ClientConfiguration;
 import com.yugam.ratelimiter.model.PolicyData;
 import org.springframework.data.redis.core.RedisTemplate;

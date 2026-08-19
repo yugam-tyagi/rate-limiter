@@ -2,18 +2,15 @@ package com.yugam.ratelimiter.strategy;
 
 import com.yugam.ratelimiter.dto.RateLimitRequest;
 import com.yugam.ratelimiter.dto.RateLimitResponse;
-import com.yugam.ratelimiter.exception.RateLimitExceededException;
-import com.yugam.ratelimiter.model.clientState.LeakyBucketClientInfo;
+import com.yugam.ratelimiter.exception.exceptions.RateLimitExceededException;
 import com.yugam.ratelimiter.model.policy.LeakyBucketPolicy;
 import com.yugam.ratelimiter.model.state.LeakyBucketState;
-import com.yugam.ratelimiter.repository.LeakyBucketStateRepository;
-import com.yugam.ratelimiter.repository.RedisRateLimitStateRepository;
+import com.yugam.ratelimiter.repository.clientStateRepository.LeakyBucketStateRepository;
 import com.yugam.ratelimiter.service.RateLimiterService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
 import static org.junit.jupiter.api.Assertions.*;
 import java.time.Instant;
 import java.util.concurrent.CountDownLatch;

@@ -2,20 +2,15 @@ package com.yugam.ratelimiter.strategy;
 
 import com.yugam.ratelimiter.dto.RateLimitRequest;
 import com.yugam.ratelimiter.dto.RateLimitResponse;
-import com.yugam.ratelimiter.enums.AlgorithmType;
-import com.yugam.ratelimiter.exception.RateLimitExceededException;
-import com.yugam.ratelimiter.model.ClientConfiguration;
-import com.yugam.ratelimiter.model.clientState.SlidingWindowClientInfo;
+import com.yugam.ratelimiter.exception.exceptions.RateLimitExceededException;
 import com.yugam.ratelimiter.model.policy.SlidingWindowPolicy;
 import com.yugam.ratelimiter.model.state.SlidingWindowState;
-import com.yugam.ratelimiter.repository.RedisRateLimitStateRepository;
-import com.yugam.ratelimiter.repository.SlidingWindowStateRepository;
+import com.yugam.ratelimiter.repository.clientStateRepository.SlidingWindowStateRepository;
 import com.yugam.ratelimiter.service.RateLimiterService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayDeque;
@@ -23,7 +18,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest

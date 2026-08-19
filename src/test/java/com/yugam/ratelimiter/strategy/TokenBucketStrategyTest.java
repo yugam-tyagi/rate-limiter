@@ -2,16 +2,15 @@ package com.yugam.ratelimiter.strategy;
 
 import com.yugam.ratelimiter.dto.RateLimitRequest;
 import com.yugam.ratelimiter.dto.RateLimitResponse;
-import com.yugam.ratelimiter.exception.RateLimitExceededException;
+import com.yugam.ratelimiter.exception.exceptions.RateLimitExceededException;
 import com.yugam.ratelimiter.model.policy.TokenBucketPolicy;
 import com.yugam.ratelimiter.model.state.TokenBucketState;
-import com.yugam.ratelimiter.repository.TokenBucketStateRepository;
+import com.yugam.ratelimiter.repository.clientStateRepository.TokenBucketStateRepository;
 import com.yugam.ratelimiter.service.RateLimiterService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.CountDownLatch;
